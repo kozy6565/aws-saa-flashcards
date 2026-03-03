@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AWS SAA 単語帳</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --card-bg: #111827;
+    --card-front: #131e2f;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7c3aed;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --border: #1e293b;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --nav-bg: rgba(10,14,26,0.95);
+  }
+
+  /* ライトモード */
+  body.light {
+    --bg: #f0f4f8;
+    --card-bg: #ffffff;
+    --card-front: #f8fafc;
+    --accent: #0077aa;
+    --accent2: #e05a20;
+    --accent3: #6d28d9;
+    --text: #1a202c;
+    --text-dim: #64748b;
+    --border: #cbd5e1;
+    --green: #059669;
+    --yellow: #d97706;
+    --red: #dc2626;
+    --nav-bg: rgba(240,244,248,0.97);
+  }
+  body.light::before {
+    background: radial-gradient(ellipse at 20% 20%, rgba(0,119,170,0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(109,40,217,0.05) 0%, transparent 50%);
+  }
+  body.light .cat-compute { background: rgba(0,119,170,0.12); color: #0077aa; }
+  body.light .cat-storage { background: rgba(5,150,105,0.12); color: #059669; }
+  body.light .cat-database { background: rgba(109,40,217,0.12); color: #6d28d9; }
+  body.light .cat-network { background: rgba(217,119,6,0.12); color: #b45309; }
+  body.light .cat-security { background: rgba(220,38,38,0.12); color: #dc2626; }
+  body.light .cat-mgmt { background: rgba(224,90,32,0.12); color: #c2410c; }
+  body.light .cat-ml { background: rgba(219,39,119,0.12); color: #be185d; }
+  body.light .cat-analytics { background: rgba(79,70,229,0.12); color: #4338ca; }
+  body.light .cat-migration { background: rgba(13,148,136,0.12); color: #0f766e; }
+  body.light .cat-container { background: rgba(180,137,20,0.12); color: #92400e; }
+  body.light .cat-integration { background: rgba(124,58,237,0.12); color: #7c3aed; }
+  body.light .cat-other { background: rgba(100,116,139,0.12); color: #475569; }
+
+  /* テーマ切り替えボタン */
+  .theme-toggle {
+    position: fixed;
+    top: 14px;
+    right: 16px;
+    z-index: 200;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .theme-toggle:hover { border-color: var(--accent); transform: scale(1.05); }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG effect */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(124,58,237,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; padding: 0 16px 100px; }
+
+  /* Header */
+  header {
+    padding: 20px 0 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  header p { font-size: 13px; color: var(--text-dim); margin-top: 4px; letter-spacing: 1px; }
+
+  /* Progress */
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    transition: width 0.4s ease;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .search-box {
+    flex: 1;
+    min-width: 160px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--text-dim); }
+
+  .cat-select {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+  }
+  .cat-select:focus { border-color: var(--accent); }
+
+  .btn {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .stat-item { display: flex; align-items: center; gap: 4px; }
+  .stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Card grid / list toggle */
+  #card-container.grid-view {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  #card-container.list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Flashcard */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .card:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,212,255,0.08); border-color: rgba(0,212,255,0.3); }
+  .card.flipped .card-back { display: block; }
+  .card.flipped .card-front-content { display: none; }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-category {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .card-status { display: flex; gap: 4px; align-items: center; }
+  .status-btn {
+    width: 28px; height: 28px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .status-btn:hover { transform: scale(1.1); }
+  .status-btn.ok { background: rgba(16,185,129,0.2); border-color: var(--green); }
+  .status-btn.ng { background: rgba(239,68,68,0.2); border-color: var(--red); }
+  .status-btn.star { background: rgba(245,158,11,0.2); border-color: var(--yellow); }
+
+  .card-front-content {
+    padding: 12px;
+  }
+  .service-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  .card-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .card-hint::after { content: '▸ タップで意味を表示'; }
+
+  .card-back {
+    display: none;
+    padding: 12px;
+    background: var(--card-front);
+  }
+  .meaning {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .meaning strong { color: var(--accent); }
+
+  .note-area {
+    margin-top: 8px;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+  }
+  .note-label { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; }
+  .note-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Noto Sans JP', sans-serif;
+    resize: none;
+    outline: none;
+    min-height: 48px;
+    transition: border-color 0.2s;
+  }
+  .note-input:focus { border-color: var(--accent); }
+  .note-input::placeholder { color: var(--text-dim); font-size: 11px; }
+
+  /* List view specific */
+  .list-view .card-front-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+  }
+  .list-view .service-name { margin-bottom: 0; font-size: 16px; flex: 1; }
+  .list-view .card-hint { display: none; }
+  .list-view .card-back { padding: 10px 12px; }
+  .list-view .meaning { font-size: 14px; }
+
+  /* Category colors */
+  .cat-compute { background: rgba(0,212,255,0.15); color: var(--accent); }
+  .cat-storage { background: rgba(16,185,129,0.15); color: var(--green); }
+  .cat-database { background: rgba(124,58,237,0.15); color: #a78bfa; }
+  .cat-network { background: rgba(245,158,11,0.15); color: var(--yellow); }
+  .cat-security { background: rgba(239,68,68,0.15); color: var(--red); }
+  .cat-mgmt { background: rgba(255,107,53,0.15); color: var(--accent2); }
+  .cat-ml { background: rgba(236,72,153,0.15); color: #f472b6; }
+  .cat-analytics { background: rgba(99,102,241,0.15); color: #818cf8; }
+  .cat-migration { background: rgba(20,184,166,0.15); color: #2dd4bf; }
+  .cat-container { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .cat-integration { background: rgba(167,139,250,0.15); color: #c4b5fd; }
+  .cat-other { background: rgba(148,163,184,0.15); color: #94a3b8; }
+
+  /* Flip indicator */
+  .flip-icon { font-size: 14px; opacity: 0.4; transition: opacity 0.2s; }
+  .card:hover .flip-icon { opacity: 0.8; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--nav-bg);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px 20px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1;
+    max-width: 140px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+    text-align: center;
+  }
+  .nav-btn:hover, .nav-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .nav-btn .nav-icon { display: block; font-size: 20px; margin-bottom: 2px; }
+
+  /* Count display */
+  .count-display {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    text-align: right;
+    margin-bottom: 12px;
+  }
+  .count-display span { color: var(--accent); }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+  .empty .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* Section header */
+  .section-header {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 8px 0 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+    margin-top: 16px;
+  }
+  .section-header:first-of-type { margin-top: 0; }
+
+  @media (min-width: 480px) {
+    .service-name { font-size: 18px; }
+    .meaning { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" title="ダーク/ライト切替">☀️</button>
+
+<div class="container">
+  <header>
+    <h1>AWS SAA 単語帳</h1>
+    <p>Solutions Architect Associate · Flashcards</p>
+  </header>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div class="controls">
+    <input type="search" class="search-box" id="searchBox" placeholder="🔍 サービス名で検索...">
+    <select class="cat-select" id="catFilter">
+      <option value="all">全カテゴリ</option>
+      <option value="コンピューティング">コンピューティング</option>
+      <option value="ストレージ">ストレージ</option>
+      <option value="データベース">データベース</option>
+      <option value="ネットワーク">ネットワーク</option>
+      <option value="セキュリティ">セキュリティ</option>
+      <option value="管理・監視">管理・監視</option>
+      <option value="分析">分析</option>
+      <option value="機械学習">機械学習</option>
+      <option value="移行・転送">移行・転送</option>
+      <option value="コンテナ">コンテナ</option>
+      <option value="統合・メッセージング">統合・メッセージング</option>
+      <option value="その他">その他</option>
+    </select>
+    <button class="btn" id="filterStarred">⭐ 要復習</button>
+    <button class="btn" id="viewToggle">☰ リスト</button>
+  </div>
+
+  <div class="stats" id="statsBar">
+    <div class="stat-item"><div class="stat-dot" style="background:var(--green)"></div><span id="okCount">0</span> OK</div>
+    <div class="stat-item"><div class="stat-dot" style="background:var(--red)"></div><span id="ngCount">0</span> NG</div>
+    <div class="stat-item"><div class="stat-dot" style="background:var(--yellow)"></div><span id="starCount">0</span> ⭐</div>
+  </div>
+
+  <div class="count-display">表示中: <span id="displayCount">0</span> / <span id="totalCount">0</span> 件</div>
+
+  <div id="card-container" class="grid-view"></div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-btn active" onclick="setMode('all')"><span class="nav-icon">📋</span>全て</button>
+  <button class="nav-btn" onclick="setMode('ng')"><span class="nav-icon">🔁</span>NG/未確認</button>
+  <button class="nav-btn" onclick="setMode('shuffle')"><span class="nav-icon">🔀</span>シャッフル</button>
+</div>
+
+<script>
+const CARDS_DATA = [
+  // ===== コンピューティング =====
+  { id: 'ec2', name: 'Amazon EC2', category: 'コンピューティング', meaning: '必要な時にすぐ借りられる<strong>仮想サーバー</strong>。インスタンスタイプで性能を選択。オンデマンド・リザーブド・スポットの3つの料金形態がある。', catClass: 'cat-compute' },
+  { id: 'ec2-asg', name: 'EC2 Auto Scaling', category: 'コンピューティング', meaning: '<strong>負荷に合わせてEC2台数を自動で増減</strong>させる。最小・最大・希望台数を設定。スケールアウト/インで高可用性を実現。', catClass: 'cat-compute' },
+  { id: 'elb', name: 'ELB（Elastic Load Balancing）', category: 'コンピューティング', meaning: '<strong>トラフィックを複数のサーバーに振り分ける</strong>ロードバランサー。ALB（HTTP/S）、NLB（TCP/UDP）、CLB（旧式）の3種類。', catClass: 'cat-compute' },
+  { id: 'lambda', name: 'AWS Lambda', category: 'コンピューティング', meaning: '<strong>サーバー管理不要のサーバーレス</strong>実行環境。プログラムを「実行した分だけ」課金。イベント駆動型で最大15分まで実行可能。', catClass: 'cat-compute' },
+  { id: 'fargate', name: 'AWS Fargate', category: 'コンピューティング', meaning: 'サーバー管理不要な<strong>コンテナ実行環境</strong>（サーバーレスコンテナ）。ECSまたはEKSと組み合わせて使用する。', catClass: 'cat-compute' },
+  { id: 'beanstalk', name: 'Elastic Beanstalk', category: 'コンピューティング', meaning: 'コードを置くだけでアプリの<strong>実行環境を自動構築</strong>するPaaS。EC2・ALB・RDSなどを自動でプロビジョニング。', catClass: 'cat-compute' },
+  { id: 'ec2-spot', name: 'EC2 スポットインスタンス', category: 'コンピューティング', meaning: 'AWSの余剰リソースを<strong>最大90%割引</strong>で利用。ただし中断される可能性あり。バッチ処理など耐障害性の高い処理に最適。', catClass: 'cat-compute' },
+  { id: 'ec2-reserved', name: 'EC2 リザーブドインスタンス', category: 'コンピューティング', meaning: '1年または3年の<strong>利用を前払い/約束</strong>することで最大72%割引。安定したワークロードに最適。', catClass: 'cat-compute' },
+  { id: 'lightsail', name: 'Amazon Lightsail', category: 'コンピューティング', meaning: '<strong>シンプルで低コスト</strong>なVPS/クラウドサービス。小規模なWebサイトや開発環境向け。', catClass: 'cat-compute' },
+  
+  // ===== ストレージ =====
+  { id: 's3', name: 'Amazon S3', category: 'ストレージ', meaning: '<strong>安くて頑丈なオブジェクトストレージ</strong>。画像・バックアップなどのデータ保存箱。イレブンナイン(99.999999999%)の耐久性。', catClass: 'cat-storage' },
+  { id: 's3-classes', name: 'S3 ストレージクラス', category: 'ストレージ', meaning: '<strong>アクセス頻度に応じてクラスを選択</strong>してコスト最適化。Standard → Standard-IA → Glacier → Glacier Deep Archiveの順にコスト↓・取り出し時間↑。', catClass: 'cat-storage' },
+  { id: 's3-lifecycle', name: 'S3 ライフサイクル', category: 'ストレージ', meaning: '一定期間後に<strong>自動でストレージクラスを変更・削除</strong>するルール。コスト最適化に重要。', catClass: 'cat-storage' },
+  { id: 's3-versioning', name: 'S3 バージョニング', category: 'ストレージ', meaning: 'オブジェクトの<strong>変更・削除履歴を保持</strong>する機能。誤削除・上書きから復元可能。', catClass: 'cat-storage' },
+  { id: 'ebs', name: 'Amazon EBS', category: 'ストレージ', meaning: 'EC2に繋いで使う<strong>専用ハードディスク（ブロックストレージ）</strong>。1つのEC2に1つ（基本）。SSD/HDDタイプあり。', catClass: 'cat-storage' },
+  { id: 'efs', name: 'Amazon EFS', category: 'ストレージ', meaning: '<strong>複数のEC2から同時に読み書き</strong>できる共有ファイルストレージ（NFS）。Linux専用。自動でスケール。', catClass: 'cat-storage' },
+  { id: 'fsx', name: 'Amazon FSx', category: 'ストレージ', meaning: 'Windows（FSx for Windows）や高性能（FSx for Lustre）向けの<strong>マネージド共有ファイルシステム</strong>。', catClass: 'cat-storage' },
+  { id: 'storage-gateway', name: 'AWS Storage Gateway', category: 'ストレージ', meaning: 'オンプレミスとAWSストレージを<strong>ハイブリッド接続</strong>するゲートウェイ。ファイル・ボリューム・テープの3種類。', catClass: 'cat-storage' },
+  { id: 'glacier', name: 'S3 Glacier', category: 'ストレージ', meaning: '<strong>低コストな長期アーカイブ用</strong>ストレージ。取り出しに数分〜数時間かかる。Deep Archiveはさらに安くなる。', catClass: 'cat-storage' },
+  
+  // ===== データベース =====
+  { id: 'rds', name: 'Amazon RDS', category: 'データベース', meaning: '設定や管理をAWSにお任せできる<strong>マネージドリレーショナルDB</strong>。MySQL/PostgreSQL/Oracle等に対応。マルチAZで高可用性。', catClass: 'cat-database' },
+  { id: 'aurora', name: 'Amazon Aurora', category: 'データベース', meaning: 'AWSが作った<strong>超高性能・高耐久</strong>なリレーショナルDB。MySQL/PostgreSQL互換。RDSの5倍(MySQL)の性能。', catClass: 'cat-database' },
+  { id: 'dynamodb', name: 'Amazon DynamoDB', category: 'データベース', meaning: '<strong>大量データでも超高速・運用不要のNoSQL DB</strong>。KVS/ドキュメント型。サーバーレスでスケール自在。', catClass: 'cat-database' },
+  { id: 'elasticache', name: 'Amazon ElastiCache', category: 'データベース', meaning: 'DBへのアクセスを<strong>高速化するキャッシュ</strong>サービス。RedisとMemcachedに対応。', catClass: 'cat-database' },
+  { id: 'redshift', name: 'Amazon Redshift', category: 'データベース', meaning: '<strong>大規模データ分析用のデータウェアハウス</strong>（DWH）。ペタバイト規模のSQLクエリを高速実行。', catClass: 'cat-database' },
+  { id: 'documentdb', name: 'Amazon DocumentDB', category: 'データベース', meaning: '<strong>MongoDBと互換性のある</strong>マネージドドキュメントDB。JSONデータを柔軟に扱える。', catClass: 'cat-database' },
+  { id: 'neptune', name: 'Amazon Neptune', category: 'データベース', meaning: '<strong>グラフデータベース</strong>のマネージドサービス。SNSのつながりや推薦エンジンなどに使用。', catClass: 'cat-database' },
+  
+  // ===== ネットワーク =====
+  { id: 'vpc', name: 'Amazon VPC', category: 'ネットワーク', meaning: 'AWSの中に作る<strong>自分専用の仮想ネットワーク</strong>。サブネット・ルートテーブル・セキュリティグループで制御。', catClass: 'cat-network' },
+  { id: 'route53', name: 'Amazon Route 53', category: 'ネットワーク', meaning: 'ドメイン名とIPを結びつける<strong>DNS（電話帳）</strong>サービス。ヘルスチェックやフェイルオーバーも可能。', catClass: 'cat-network' },
+  { id: 'cloudfront', name: 'Amazon CloudFront', category: 'ネットワーク', meaning: '世界中に<strong>コンテンツを高速配信するCDN</strong>。エッジロケーションでキャッシュ。S3/ALBと連携。', catClass: 'cat-network' },
+  { id: 'sg', name: 'セキュリティグループ', category: 'ネットワーク', meaning: '<strong>インスタンスレベルのファイアウォール</strong>。インバウンド/アウトバウンドのトラフィックを制御。ステートフル。', catClass: 'cat-network' },
+  { id: 'nacl', name: 'ネットワークACL（NACL）', category: 'ネットワーク', meaning: '<strong>サブネットレベルのファイアウォール</strong>。ルール番号の小さい順に評価。ステートレス（戻りの通信も設定必要）。', catClass: 'cat-network' },
+  { id: 'igw', name: 'インターネットゲートウェイ', category: 'ネットワーク', meaning: 'VPCを<strong>インターネットに接続する出入口</strong>。パブリックサブネットのルートに設定が必要。', catClass: 'cat-network' },
+  { id: 'nat', name: 'NATゲートウェイ', category: 'ネットワーク', meaning: 'プライベートサブネットのEC2が<strong>インターネットに一方向で接続</strong>できるようにする。外部からは直接アクセス不可。', catClass: 'cat-network' },
+  { id: 'vpc-peering', name: 'VPCピアリング', category: 'ネットワーク', meaning: '2つのVPCを<strong>プライベートに接続</strong>する機能。CIDRが重複しているとNG。推移的ルーティング不可。', catClass: 'cat-network' },
+  { id: 'tgw', name: 'AWS Transit Gateway', category: 'ネットワーク', meaning: '複数のVPCやオンプレミスネットワークを<strong>ハブ&スポーク型で相互接続</strong>。大規模ネットワーク構成に最適。', catClass: 'cat-network' },
+  { id: 'dx', name: 'AWS Direct Connect', category: 'ネットワーク', meaning: 'オンプレミスとAWSを<strong>専用線で物理接続</strong>。安定した帯域幅と低レイテンシー。インターネット経由より安全。', catClass: 'cat-network' },
+  { id: 'vpn', name: 'AWS Site-to-Site VPN', category: 'ネットワーク', meaning: 'オンプレミスとVPCを<strong>インターネット経由で暗号化接続</strong>。Direct Connectより安価で手軽。', catClass: 'cat-network' },
+  
+  // ===== セキュリティ =====
+  { id: 'iam', name: 'AWS IAM', category: 'セキュリティ', meaning: 'AWSサービスやリソースへの<strong>アクセス権限を管理</strong>。ユーザー・グループ・ロール・ポリシーで構成。最小権限の原則が重要。', catClass: 'cat-security' },
+  { id: 'kms', name: 'AWS KMS', category: 'セキュリティ', meaning: '<strong>暗号化キーを管理するマネージドサービス</strong>。S3・EBS・RDSなどの暗号化に使用。CMK（カスタマーマスターキー）を作成・管理。', catClass: 'cat-security' },
+  { id: 'waf', name: 'AWS WAF', category: 'セキュリティ', meaning: '<strong>Webアプリケーションを守るファイアウォール</strong>。SQLインジェクション・XSSなどの攻撃をブロック。CloudFront・ALBと連携。', catClass: 'cat-security' },
+  { id: 'shield', name: 'AWS Shield', category: 'セキュリティ', meaning: '<strong>DDoS攻撃から保護</strong>するサービス。Standard（無料）とAdvanced（有料・詳細保護）がある。', catClass: 'cat-security' },
+  { id: 'guardduty', name: 'Amazon GuardDuty', category: 'セキュリティ', meaning: '<strong>脅威検出サービス</strong>。機械学習でCloudTrail・VPCフローログ等を分析し不審なアクティビティを検出。', catClass: 'cat-security' },
+  { id: 'inspector', name: 'Amazon Inspector', category: 'セキュリティ', meaning: 'EC2やコンテナの<strong>脆弱性を自動でスキャン・評価</strong>するサービス。', catClass: 'cat-security' },
+  { id: 'secrets', name: 'AWS Secrets Manager', category: 'セキュリティ', meaning: 'DBパスワード・APIキーなどの<strong>機密情報を安全に管理・自動ローテーション</strong>するサービス。', catClass: 'cat-security' },
+  { id: 'cognito', name: 'Amazon Cognito', category: 'セキュリティ', meaning: 'Webアプリ・モバイルアプリの<strong>ユーザー認証・認可機能</strong>を提供。SNSログイン等にも対応。', catClass: 'cat-security' },
+  { id: 'acm', name: 'AWS Certificate Manager', category: 'セキュリティ', meaning: '<strong>SSL/TLS証明書を無料で発行・管理</strong>。ALB・CloudFront等に適用してHTTPS通信を実現。', catClass: 'cat-security' },
+  { id: 'scp', name: 'サービスコントロールポリシー（SCP）', category: 'セキュリティ', meaning: 'AWS Organizationsで<strong>アカウント全体に適用する最上位の権限制限</strong>。IAMポリシーより優先される。', catClass: 'cat-security' },
+  
+  // ===== 管理・監視 =====
+  { id: 'cloudwatch', name: 'Amazon CloudWatch', category: '管理・監視', meaning: 'AWSリソースの<strong>メトリクス・ログを収集・監視</strong>するサービス。アラーム設定でSNS通知やAuto Scalingと連携。', catClass: 'cat-mgmt' },
+  { id: 'cloudtrail', name: 'AWS CloudTrail', category: '管理・監視', meaning: '<strong>誰が・いつ・何をしたか</strong>のAPI呼び出し履歴を記録。セキュリティ監査に必須。S3に保存可能。', catClass: 'cat-mgmt' },
+  { id: 'config', name: 'AWS Config', category: '管理・監視', meaning: 'AWSリソースの<strong>設定変更履歴を記録・追跡</strong>するサービス。コンプライアンス評価にも使用。', catClass: 'cat-mgmt' },
+  { id: 'cloudformation', name: 'AWS CloudFormation', category: '管理・監視', meaning: 'AWSリソースを<strong>コードで定義（IaC）して自動構築</strong>するサービス。テンプレートからスタックを作成。', catClass: 'cat-mgmt' },
+  { id: 'systems-manager', name: 'AWS Systems Manager', category: '管理・監視', meaning: 'EC2等の<strong>運用管理を一元化</strong>するサービス。パッチ管理・設定管理・リモートアクセス（Session Manager）等。', catClass: 'cat-mgmt' },
+  { id: 'trusted-advisor', name: 'AWS Trusted Advisor', category: '管理・監視', meaning: 'コスト最適化・セキュリティ・パフォーマンス等の<strong>ベストプラクティスをチェック・推奨</strong>するサービス。', catClass: 'cat-mgmt' },
+  { id: 'organizations', name: 'AWS Organizations', category: '管理・監視', meaning: '複数のAWSアカウントを<strong>一元管理</strong>するサービス。SCPで権限制御・一括請求が可能。', catClass: 'cat-mgmt' },
+  
+  // ===== 分析 =====
+  { id: 'athena', name: 'Amazon Athena', category: '分析', meaning: '<strong>S3のデータに直接SQLを実行</strong>するサーバーレスクエリサービス。サーバー不要・スキャンしたデータ量で課金。', catClass: 'cat-analytics' },
+  { id: 'emr', name: 'Amazon EMR', category: '分析', meaning: 'HadoopやSparkを使いビッグデータを<strong>分析・処理するマネージドクラスター</strong>。', catClass: 'cat-analytics' },
+  { id: 'glue', name: 'AWS Glue', category: '分析', meaning: 'データを<strong>抽出・変換・ロード（ETL）するサーバーレス</strong>サービス。データカタログ機能でメタデータ管理。', catClass: 'cat-analytics' },
+  { id: 'kinesis', name: 'Amazon Kinesis', category: '分析', meaning: '<strong>ストリーミングデータをリアルタイムで収集・処理</strong>するサービス。Data Streams・Firehose・Analyticsがある。', catClass: 'cat-analytics' },
+  { id: 'opensearch', name: 'Amazon OpenSearch', category: '分析', meaning: '<strong>テキスト全文検索・ログ分析</strong>をリアルタイムで行うマネージドサービス（旧Elasticsearch）。', catClass: 'cat-analytics' },
+  
+  // ===== 機械学習 =====
+  { id: 'sagemaker', name: 'Amazon SageMaker', category: '機械学習', meaning: '機械学習モデルの<strong>構築・学習・デプロイを一貫して行える</strong>マネージドプラットフォーム。', catClass: 'cat-ml' },
+  { id: 'rekognition', name: 'Amazon Rekognition', category: '機械学習', meaning: '機械学習を使った<strong>画像・動画認識サービス</strong>。顔認識・物体検出・テキスト読み取りが可能。', catClass: 'cat-ml' },
+  { id: 'transcribe', name: 'Amazon Transcribe', category: '機械学習', meaning: '機械学習を使った<strong>音声→テキスト変換（文字起こし）</strong>サービス。', catClass: 'cat-ml' },
+  { id: 'polly', name: 'Amazon Polly', category: '機械学習', meaning: '機械学習を使った<strong>テキスト→音声変換（読み上げ）</strong>サービス。リアルな音声を生成。', catClass: 'cat-ml' },
+  { id: 'comprehend', name: 'Amazon Comprehend', category: '機械学習', meaning: '機械学習による<strong>自然言語処理（NLP）サービス</strong>。感情分析・エンティティ認識・キーフレーズ抽出。', catClass: 'cat-ml' },
+  { id: 'lex', name: 'Amazon Lex', category: '機械学習', meaning: '機械学習を使った<strong>会話型インターフェース（チャットボット）</strong>構築サービス。AlexaのAI技術。', catClass: 'cat-ml' },
+  
+  // ===== 移行・転送 =====
+  { id: 'snowball', name: 'AWS Snowball', category: '移行・転送', meaning: 'オンプレミスの大量データを<strong>物理デバイスで輸送してAWSに転送</strong>するサービス。ネット転送が困難な時に使用。', catClass: 'cat-migration' },
+  { id: 'datasync', name: 'AWS DataSync', category: '移行・転送', meaning: 'オンプレミスとAWSストレージ間で<strong>データを高速に転送・同期</strong>するサービス。', catClass: 'cat-migration' },
+  { id: 'dms', name: 'AWS DMS', category: '移行・転送', meaning: '稼働中のDBを<strong>ダウンタイム最小でAWSへ移行</strong>するサービス。異種DB間の移行も可能。', catClass: 'cat-migration' },
+  { id: 'transfer', name: 'AWS Transfer Family', category: '移行・転送', meaning: 'SFTP・FTPS・FTPを使って<strong>AWSストレージへファイル転送</strong>するマネージドサービス。', catClass: 'cat-migration' },
+  
+  // ===== コンテナ =====
+  { id: 'ecs', name: 'Amazon ECS', category: 'コンテナ', meaning: 'AWS上で簡単に<strong>コンテナを実行・管理するサービス</strong>（Docker）。EC2またはFargateで実行。', catClass: 'cat-container' },
+  { id: 'eks', name: 'Amazon EKS', category: 'コンテナ', meaning: '<strong>Kubernetes（K8s）のマネージドサービス</strong>。Kubernetesクラスターの構築・運用をAWSが管理。', catClass: 'cat-container' },
+  { id: 'ecr', name: 'Amazon ECR', category: 'コンテナ', meaning: '<strong>Dockerコンテナイメージの保管・管理</strong>を行うマネージドコンテナレジストリ。', catClass: 'cat-container' },
+  
+  // ===== 統合・メッセージング =====
+  { id: 'sqs', name: 'Amazon SQS', category: '統合・メッセージング', meaning: 'アプリ間でメッセージを<strong>非同期でやりとりするキューサービス</strong>。スタンダードキューとFIFOキューがある。', catClass: 'cat-integration' },
+  { id: 'sns', name: 'Amazon SNS', category: '統合・メッセージング', meaning: 'メッセージを<strong>複数の宛先に一斉配信（Pub/Sub）</strong>するサービス。メール・SMS・Lambdaなどに通知。', catClass: 'cat-integration' },
+  { id: 'eventbridge', name: 'Amazon EventBridge', category: '統合・メッセージング', meaning: 'AWSサービスや外部SaaSの<strong>イベントをルーティング</strong>するサーバーレスバス。', catClass: 'cat-integration' },
+  { id: 'step-functions', name: 'AWS Step Functions', category: '統合・メッセージング', meaning: 'Lambda等の複数サービスを<strong>ステートマシンで連携・オーケストレーション</strong>するサービス。', catClass: 'cat-integration' },
+  { id: 'api-gateway', name: 'Amazon API Gateway', category: '統合・メッセージング', meaning: '<strong>APIの作成・管理・公開</strong>を行うサービス。Lambdaと組み合わせてサーバーレスAPIを構築。', catClass: 'cat-integration' },
+  
+  // ===== その他 =====
+  { id: 'well-architected', name: 'AWS Well-Architected', category: 'その他', meaning: 'AWSが提唱する<strong>5本柱</strong>：①卓越した運用効率②セキュリティ③信頼性④パフォーマンス効率⑤コスト最適化。最近は持続可能性も追加。', catClass: 'cat-other' },
+  { id: 'az', name: 'アベイラビリティゾーン（AZ）', category: 'その他', meaning: 'リージョン内にある<strong>独立したデータセンター群</strong>。複数AZを使うことで障害への耐性が上がる（マルチAZ構成）。', catClass: 'cat-other' },
+  { id: 'region', name: 'リージョン', category: 'その他', meaning: 'AWSのサービスが提供される<strong>地理的なエリア</strong>。東京・大阪・米国等。データをどのリージョンに置くかが重要。', catClass: 'cat-other' },
+  { id: 'edge', name: 'エッジロケーション', category: 'その他', meaning: 'CloudFront/Route53が使う<strong>世界中に配置されたキャッシュ拠点</strong>。リージョン外にある。コンテンツを近くから配信。', catClass: 'cat-other' },
+  { id: 'outposts', name: 'AWS Outposts', category: 'その他', meaning: 'AWSのインフラを<strong>オンプレミス（自社データセンター）に設置</strong>してAWS APIを使えるサービス。', catClass: 'cat-other' },
+];
+
+// State
+let state = {
+  flipped: {},
+  status: {},  // 'ok' | 'ng' | 'star'
+  notes: {},
+  view: 'grid',
+  mode: 'all',
+  filterStarred: false,
+  searchTerm: '',
+  catFilter: 'all',
+};
+
+// Load saved state
+const saved = localStorage.getItem('awsSaaState');
+if (saved) {
+  try { const s = JSON.parse(saved); Object.assign(state, s); } catch(e) {}
+}
+
+function saveState() {
+  localStorage.setItem('awsSaaState', JSON.stringify({
+    status: state.status,
+    notes: state.notes,
+  }));
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getFilteredCards() {
+  let cards = [...CARDS_DATA];
+  
+  if (state.mode === 'shuffle') cards = shuffle(cards);
+  if (state.mode === 'ng') {
+    cards = cards.filter(c => state.status[c.id] !== 'ok');
+  }
+  if (state.filterStarred) {
+    cards = cards.filter(c => state.status[c.id] === 'star');
+  }
+  if (state.catFilter !== 'all') {
+    cards = cards.filter(c => c.category === state.catFilter);
+  }
+  if (state.searchTerm) {
+    const q = state.searchTerm.toLowerCase();
+    cards = cards.filter(c => c.name.toLowerCase().includes(q) || c.meaning.toLowerCase().includes(q));
+  }
+  return cards;
+}
+
+function updateStats() {
+  const ok = Object.values(state.status).filter(v => v === 'ok').length;
+  const ng = CARDS_DATA.length - ok - Object.values(state.status).filter(v => v === 'star').length;
+  const star = Object.values(state.status).filter(v => v === 'star').length;
+  document.getElementById('okCount').textContent = ok;
+  document.getElementById('ngCount').textContent = Math.max(0, CARDS_DATA.length - ok);
+  document.getElementById('starCount').textContent = star;
+  
+  const progress = (ok / CARDS_DATA.length) * 100;
+  document.getElementById('progressFill').style.width = progress + '%';
+}
+
+function render() {
+  const container = document.getElementById('card-container');
+  const cards = getFilteredCards();
+  
+  document.getElementById('displayCount').textContent = cards.length;
+  document.getElementById('totalCount').textContent = CARDS_DATA.length;
+  
+  if (cards.length === 0) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>該当するカードがありません</p></div>`;
+    return;
+  }
+
+  // Group by category
+  const groups = {};
+  cards.forEach(c => {
+    if (!groups[c.category]) groups[c.category] = [];
+    groups[c.category].push(c);
+  });
+
+  let html = '';
+  
+  if (state.view === 'grid') {
+    Object.entries(groups).forEach(([cat, catCards]) => {
+      html += `<div class="section-header" style="grid-column:1/-1">${cat}</div>`;
+      catCards.forEach(card => { html += renderCard(card); });
+    });
+  } else {
+    Object.entries(groups).forEach(([cat, catCards]) => {
+      html += `<div class="section-header">${cat}</div>`;
+      catCards.forEach(card => { html += renderCard(card); });
+    });
+  }
+
+  container.innerHTML = html;
+  updateStats();
+  
+  // Restore flipped states
+  Object.keys(state.flipped).forEach(id => {
+    if (state.flipped[id]) {
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (el) el.classList.add('flipped');
+    }
+  });
+}
+
+function renderCard(card) {
+  const st = state.status[card.id] || '';
+  const note = state.notes[card.id] || '';
+  return `
+  <div class="card${state.flipped[card.id] ? ' flipped' : ''}" data-id="${card.id}" onclick="handleCardClick(event, '${card.id}')">
+    <div class="card-header">
+      <span class="card-category ${card.catClass}">${card.category}</span>
+      <div class="card-status">
+        <button class="status-btn${st === 'ok' ? ' ok' : ''}" onclick="setStatus(event,'${card.id}','ok')" title="わかった">✓</button>
+        <button class="status-btn${st === 'ng' ? ' ng' : ''}" onclick="setStatus(event,'${card.id}','ng')" title="まだ">✗</button>
+        <button class="status-btn${st === 'star' ? ' star' : ''}" onclick="setStatus(event,'${card.id}','star')" title="要復習">★</button>
+      </div>
+    </div>
+    <div class="card-front-content">
+      <div class="service-name">${card.name}</div>
+      <div class="card-hint"></div>
+    </div>
+    <div class="card-back">
+      <div class="meaning">${card.meaning}</div>
+      <div class="note-area">
+        <div class="note-label">// MEMO</div>
+        <textarea class="note-input" data-note-id="${card.id}" onclick="event.stopPropagation()" oninput="saveNote('${card.id}', this.value)" placeholder="自分なりのメモを追加...">${note}</textarea>
+      </div>
+    </div>
+  </div>`;
+}
+
+function handleCardClick(e, id) {
+  if (e.target.tagName === 'BUTTON' || e.target.tagName === 'TEXTAREA') return;
+  const el = document.querySelector(`[data-id="${id}"]`);
+  state.flipped[id] = !state.flipped[id];
+  el.classList.toggle('flipped');
+}
+
+function setStatus(e, id, status) {
+  e.stopPropagation();
+  if (state.status[id] === status) {
+    delete state.status[id];
+  } else {
+    state.status[id] = status;
+  }
+  saveState();
+  
+  const el = document.querySelector(`[data-id="${id}"]`);
+  if (el) {
+    const btns = el.querySelectorAll('.status-btn');
+    btns.forEach((btn, i) => {
+      const types = ['ok', 'ng', 'star'];
+      btn.className = 'status-btn';
+      if (state.status[id] === types[i]) btn.classList.add(types[i]);
+    });
+  }
+  updateStats();
+}
+
+function saveNote(id, value) {
+  state.notes[id] = value;
+  saveState();
+}
+
+function setMode(mode) {
+  state.mode = mode;
+  document.querySelectorAll('.nav-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', ['all','ng','shuffle'][i] === mode);
+  });
+  render();
+}
+
+// View toggle
+document.getElementById('viewToggle').addEventListener('click', function() {
+  state.view = state.view === 'grid' ? 'list' : 'grid';
+  this.textContent = state.view === 'grid' ? '☰ リスト' : '⊞ グリッド';
+  document.getElementById('card-container').className = state.view === 'grid' ? 'grid-view' : 'list-view';
+  render();
+});
+
+// Filter starred
+document.getElementById('filterStarred').addEventListener('click', function() {
+  state.filterStarred = !state.filterStarred;
+  this.classList.toggle('active');
+  render();
+});
+
+// Search
+document.getElementById('searchBox').addEventListener('input', function() {
+  state.searchTerm = this.value;
+  render();
+});
+
+// Category filter
+document.getElementById('catFilter').addEventListener('change', function() {
+  state.catFilter = this.value;
+  render();
+});
+
+// Theme toggle
+const themeBtn = document.getElementById('themeToggle');
+const savedTheme = localStorage.getItem('awsSaaTheme') || 'dark';
+if (savedTheme === 'light') {
+  document.body.classList.add('light');
+  themeBtn.textContent = '🌙';
+}
+themeBtn.addEventListener('click', function() {
+  const isLight = document.body.classList.toggle('light');
+  this.textContent = isLight ? '🌙' : '☀️';
+  localStorage.setItem('awsSaaTheme', isLight ? 'light' : 'dark');
+});
+
+// Init
+render();
+</script>
+</body>
+</html>
