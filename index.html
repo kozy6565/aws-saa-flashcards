@@ -395,7 +395,50 @@
   }
   .section-header:first-of-type { margin-top: 0; }
 
-  @media (min-width: 480px) {
+  /* フォントサイズ切り替え */
+  .font-toggle {
+    position: fixed;
+    top: 14px;
+    right: 60px;
+    z-index: 200;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .font-toggle:hover { border-color: var(--accent); }
+  .font-size-label { font-size: 11px; color: var(--text-dim); min-width: 24px; text-align: center; }
+
+  /* フォントサイズ段階 */
+  body.font-small { font-size: 13px; }
+  body.font-small .service-name { font-size: 14px !important; }
+  body.font-small .meaning { font-size: 12px !important; }
+  body.font-small .card-hint { font-size: 10px !important; }
+  body.font-small .note-input { font-size: 12px !important; }
+  body.font-small .nav-btn { font-size: 12px !important; }
+  body.font-small .btn { font-size: 12px !important; }
+  body.font-small .search-box { font-size: 13px !important; }
+  body.font-small .cat-select { font-size: 12px !important; }
+
+  body.font-large { font-size: 18px; }
+  body.font-large .service-name { font-size: 21px !important; }
+  body.font-large .meaning { font-size: 18px !important; }
+  body.font-large .card-hint { font-size: 14px !important; }
+  body.font-large .note-input { font-size: 16px !important; }
+  body.font-large .nav-btn { font-size: 16px !important; }
+  body.font-large .btn { font-size: 16px !important; }
+  body.font-large .search-box { font-size: 16px !important; }
+  body.font-large .cat-select { font-size: 15px !important; }
+  body.font-large .card-category { font-size: 13px !important; }
+  body.font-large .status-btn { width: 34px !important; height: 34px !important; font-size: 16px !important; }
     .service-name { font-size: 18px; }
     .meaning { font-size: 16px; }
   }
@@ -403,6 +446,9 @@
 </head>
 <body>
 
+<button class="font-toggle" id="fontToggle" title="文字サイズ切替">
+  <span>Ａ</span><span class="font-size-label" id="fontLabel">標準</span>
+</button>
 <button class="theme-toggle" id="themeToggle" title="ダーク/ライト切替">☀️</button>
 
 <div class="container">
@@ -765,6 +811,28 @@ document.getElementById('searchBox').addEventListener('input', function() {
 document.getElementById('catFilter').addEventListener('change', function() {
   state.catFilter = this.value;
   render();
+});
+
+// Font size toggle
+const fontSizes = ['small', 'normal', 'large'];
+const fontLabels = { small: '小', normal: '標準', large: '大' };
+let currentFont = localStorage.getItem('awsSaaFont') || 'normal';
+
+function applyFont(size) {
+  document.body.classList.remove('font-small', 'font-large');
+  if (size === 'small') document.body.classList.add('font-small');
+  if (size === 'large') document.body.classList.add('font-large');
+  document.getElementById('fontLabel').textContent = fontLabels[size];
+  currentFont = size;
+  localStorage.setItem('awsSaaFont', size);
+}
+
+applyFont(currentFont);
+
+document.getElementById('fontToggle').addEventListener('click', function() {
+  const idx = fontSizes.indexOf(currentFont);
+  const next = fontSizes[(idx + 1) % fontSizes.length];
+  applyFont(next);
 });
 
 // Theme toggle
